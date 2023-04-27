@@ -1,0 +1,21 @@
+---
+- name: windows updates
+  hosts: windows
+  gather_facts: yes
+  tasks:
+    - block:
+      - name : Installing the windows updates
+        win_updates:
+          category_names:
+            - CriticalUpdates
+            - UpdateRollups
+            - Security Updates
+          state: installed
+          # become: yes
+          # become_method: runas
+          # become_user: SYSTEM
+          log_path: C:\ansible_win_update_installed.txt
+        register: updates
+      - name: Status of above installation
+        debug: 
+          msg: "{{ updates }}"

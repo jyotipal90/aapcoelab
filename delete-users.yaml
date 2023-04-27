@@ -1,0 +1,35 @@
+---
+
+- name: Delete users  
+  hosts: all
+  become: true
+  vars:
+    users: "{{ users }}"
+  tasks:
+    - name: Check if user exists
+      shell: "id -u {{ user.user_name }} >/dev/null 2>&1; echo $?"
+      register: user_exists
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+
+    - name: Remove users 
+      ansible.builtin.user:
+        name: "{{ user.user_name }}"
+        # state=absent, it attempts to remove directories associated with the user.
+        state: absent
+      when: user_exists.results[index].stdout == "0"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+        index_var: index
+      register: user_changed
+
+      # debug will only run if user deleted successfully
+    - name: User deleted
+      debug:
+        msg: "User deleted {{ user.user.user_name }}"
+      when: user_changed.changed
+      loop: "{{ user_changed.results }}"
+      loop_control:
+        loop_var: user
