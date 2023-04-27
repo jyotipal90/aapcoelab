@@ -1,5 +1,6 @@
 ---
-- hosts: "env_{{ lifecycle_stage }}"
+- name: Demo playbook to redhat patch
+  hosts: all
   become: yes
   vars:
     check_only: yes

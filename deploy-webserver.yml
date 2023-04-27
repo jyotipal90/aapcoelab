@@ -1,6 +1,6 @@
 ---
 - name: Demo playbook to test callback plugin - Deployment
-  hosts: aws_ec2
+  hosts: all
   gather_facts : yes
   tasks:
 
