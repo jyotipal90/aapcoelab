@@ -14,7 +14,7 @@
     yum:
       name: '*'
       state: latest
-      exclude: kernel*
+      #exclude: kernel*
     check_mode: "{{ check_only }}"
     register: updates
 
