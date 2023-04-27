@@ -1,0 +1,56 @@
+---
+
+# Add multiple users into wheel group and create random passwords for users which should be changed after one time login
+- name: Create users
+  hosts: all
+  become: true
+  vars:
+    users: "{{ users }}"
+    password_dict: {}
+  tasks:
+    - name: Install the latest version of expect
+      ansible.builtin.yum:
+        name: expect
+        state: latest
+
+    - name: Create the 'wheel' group if it does not exist
+      group:
+        name: wheel
+        state: present
+    
+    - name: Generate random passwords for users
+      # 12 chars 3 digits 3 capital letters and zero special chars
+      shell: mkpasswd -l 12 -d 3 -C 3 -s 0
+      register: encrypted_user_password
+      loop: "{{ users }}"
+    
+    - name : Create password dictionary
+      # Combine the encrypted password for each user into a dictionary
+      # with the user name as the key
+      set_fact:
+        password_dict: "{{ password_dict | combine({item.item: item.stdout | trim }) }}"
+      loop: "{{ encrypted_user_password.results }}"
+
+    - name: Create user accounts
+      ansible.builtin.user:
+        name: "{{ item }}"
+        password: "{{ password_dict[item] | password_hash('sha512') }}"
+        state: present
+        group: wheel
+        append: yes
+        shell: /bin/bash
+        update_password: always
+      loop: "{{ users }}"
+      register: user_created 
+
+    - name: Force users to change passwords on first login
+      ansible.builtin.command:
+        cmd: chage -d 0 {{ item.name }}
+      loop: "{{ user_created.results }}"
+      when: item.changed
+
+    - name: Display user names and passwords
+      debug:
+        msg: "User: {{ item.name }} Password: {{ password_dict[item.name] }}"
+      loop: "{{ user_created.results }}"
+
