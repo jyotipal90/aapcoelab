@@ -9,7 +9,7 @@
           category_names:
             - CriticalUpdates
             - UpdateRollups
-            - Security Updates
+           # - Security Updates
           state: installed
           # become: yes
           # become_method: runas
