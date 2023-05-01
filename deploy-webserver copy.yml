@@ -1,0 +1,22 @@
+---
+- name: Demo playbook to test callback plugin - Deployment
+  hosts: all
+  gather_facts : yes
+  tasks:
+
+    - package :
+        name: httpd
+        state: latest
+
+    - service :
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: Create a custom index.html file
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          Usecase Demo:
+          deploying web service using ansible autometion platform workflow
+          First commit
